@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>The Ledger</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231a73e8'/%3E%3Cpath d='M20 16h24v8H20zM20 28h24v8H20zM20 40h14v8H20z' fill='white'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="drawer-overlay" id="drawerOverlay"></div>
+
+<div class="app-shell">
+
+  <!-- ============ SIDEBAR (desktop) ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="seal">L</div>
+      <div class="wordmark">The Ledger</div>
+    </div>
+    <button class="theme-toggle" type="button" aria-pressed="false">
+      <span class="theme-toggle-icon">🌙</span>
+      <span class="theme-toggle-label">Night mode</span>
+    </button>
+    <ul class="nav-list">
+      <li class="nav-item" data-view="dashboard"><span class="ic">◆</span> Dashboard</li>
+      <li class="nav-item" data-view="calendar"><span class="ic">▦</span> Calendar</li>
+      <li class="nav-item" data-view="contributions"><span class="ic">✎</span> Encode</li>
+      <li class="nav-item" data-view="contributors"><span class="ic">☰</span> Contributors</li>
+      <li class="nav-item" data-view="expenses"><span class="ic">💸</span> Expenses</li>
+      <li class="nav-item" data-view="settings" data-role="admin"><span class="ic">⚙</span> Types</li>
+      <li class="nav-item" data-view="users" data-role="admin"><span class="ic">◈</span> Users</li>
+    </ul>
+    <div class="sidebar-user">
+      <div class="who" id="sbName">—</div>
+      <div id="sbEmail" style="color:rgba(241,238,227,0.6)">—</div>
+      <span class="role-badge" id="sbRole">—</span>
+      <button class="logout" id="logoutBtn">Sign out</button>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <div class="topbar">
+      <div class="wordmark">The Ledger</div>
+      <div class="topbar-actions">
+        <button class="theme-toggle" type="button" aria-pressed="false">
+          <span class="theme-toggle-icon">🌙</span>
+          <span class="theme-toggle-label">Night mode</span>
+        </button>
+        <button class="hamburger" id="hamburgerBtn">☰</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ---------- DASHBOARD ---------- -->
+      <section class="view" id="view-dashboard">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">Overview</div>
+            <h1>Dashboard</h1>
+          </div>
+        </div>
+
+        <div class="stat-grid" id="statGrid">
+          <div class="stat-card"><div class="label">Total collected</div><div class="value" id="statTotal">—</div><div class="sub">All time</div></div>
+          <div class="stat-card"><div class="label">This month</div><div class="value" id="statMonth">—</div><div class="sub" id="statMonthLabel">—</div></div>
+          <div class="stat-card"><div class="label">This week</div><div class="value" id="statWeek">—</div><div class="sub">Since Monday</div></div>
+          <div class="stat-card"><div class="label">Contributors</div><div class="value" id="statContributors">—</div><div class="sub">Active</div></div>
+        </div>
+
+        <div class="chart-grid">
+          <div class="card card-pad">
+            <h3 style="margin-bottom:14px;font-family:var(--font-body);font-size:15px;">Collections by month</h3>
+            <div class="chart-box"><div id="chartMonthly"></div></div>
+          </div>
+          <div class="card card-pad">
+            <h3 style="margin-bottom:14px;font-family:var(--font-body);font-size:15px;">By contribution type</h3>
+            <div class="chart-box"><div id="chartTypes"></div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h3>Top contributors</h3></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Contributor</th><th class="amount">Total given</th><th class="amount"># of gifts</th></tr></thead>
+              <tbody id="topContributorsBody"><tr><td colspan="3">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+          <div class="card-head"><h3>Recent activity</h3></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Contributor</th><th>Type</th><th class="amount">Amount</th></tr></thead>
+              <tbody id="recentActivityBody"><tr><td colspan="4">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+          <div class="card-head">
+            <h3>Export dashboard report</h3>
+            <div class="row-actions">
+              <select id="exportRange" style="padding:8px 10px; border-radius:6px; border:1px solid var(--line);">
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+              <button class="btn btn-primary" id="exportReportBtn" type="button" style="width:auto;">Export HTML Report</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Range</th><th>Collections</th><th>Expenses</th><th>Net</th></tr></thead>
+              <tbody id="exportSummaryBody"><tr><td colspan="4">Select a range and export.</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- CALENDAR ---------- -->
+      <section class="view" id="view-calendar">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">Collection schedule</div>
+            <h1>Calendar</h1>
+          </div>
+        </div>
+        <div class="calendar-legend">
+          <span><span class="dot gold"></span>Regular collection day (Sun &amp; Wed)</span>
+          <span><span class="dot stamp"></span>Contributions recorded</span>
+        </div>
+        <div class="card card-pad">
+          <div class="calendar-head">
+            <button class="btn btn-outline btn-sm" id="calPrev">‹ Prev</button>
+            <div class="month-label" id="calLabel">—</div>
+            <button class="btn btn-outline btn-sm" id="calNext">Next ›</button>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
+      </section>
+
+      <!-- ---------- ENCODE CONTRIBUTIONS ---------- -->
+      <section class="view" id="view-contributions">
+        <div class="page-head">
+          <div>
+            <!-- ----------<div class="eyebrow">Record a gift</div>---------- -->
+            <h1>Encode contributions</h1>
+          </div>
+        </div>
+
+        <div class="card card-pad" id="encodeFormCard" style="margin-bottom:18px;">
+          <form id="contribForm" class="form-grid">
+            <div class="field">
+              <label for="cfContributor">Contributor</label>
+              <div class="search-picker">
+                <input type="text" id="cfContributor" placeholder="Start typing a registered name" autocomplete="off" required>
+                <div class="search-picker-list" id="cfContributorList"></div>
+                <input type="hidden" id="cfContributorId">
+              </div>
+            </div>
+            <div class="field">
+              <label for="cfType">Contribution type</label>
+              <select id="cfType" required></select>
+            </div>
+            <div class="field">
+              <label for="cfAmount">Amount</label>
+              <input type="number" id="cfAmount" min="0" step="0.01" required>
+            </div>
+            <div class="field">
+              <label for="cfDate">Date</label>
+              <input type="date" id="cfDate" required>
+            </div>
+            <div class="field" style="grid-column: 1 / -1;">
+              <label for="cfNote">Note (optional)</label>
+              <input type="text" id="cfNote" placeholder="e.g. paid in cash">
+            </div>
+            <div class="form-actions" style="grid-column: 1 / -1;">
+              <button type="submit" class="btn btn-primary" style="width:auto;">Save contribution</button>
+              <span id="contribFormMsg" style="align-self:center;font-size:13px;color:var(--forest-lighter);"></span>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h3>All contributions</h3>
+            <input type="text" class="search-input" id="contribSearch" placeholder="Search contributor…">
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Contributor</th><th>Type</th><th class="amount">Amount</th><th>Encoded by</th><th></th></tr></thead>
+              <tbody id="contribBody"><tr><td colspan="6">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- EXPENSES ---------- -->
+      <section class="view" id="view-expenses">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">Expenses</div>
+            <h1>Expense records</h1>
+          </div>
+        </div>
+
+        <div class="card card-pad" style="margin-bottom:18px;">
+          <form id="expenseForm" class="form-grid">
+            <div class="field">
+              <label for="expName">Item name</label>
+              <input type="text" id="expName" placeholder="e.g. Printing materials" required>
+            </div>
+            <div class="field">
+              <label for="expPrice">Price</label>
+              <input type="number" id="expPrice" min="0" step="0.01" required>
+            </div>
+            <div class="field">
+              <label for="expQuantity">Quantity</label>
+              <input type="number" id="expQuantity" min="0" step="1" required>
+            </div>
+            <div class="field">
+              <label for="expDate">Date</label>
+              <input type="date" id="expDate" required>
+            </div>
+            <div class="field" style="grid-column: 1 / -1;">
+              <label for="expNote">Note (optional)</label>
+              <input type="text" id="expNote" placeholder="e.g. office supplies">
+            </div>
+            <div class="form-actions" style="grid-column: 1 / -1;">
+              <button type="submit" class="btn btn-primary" style="width:auto;">Record expense</button>
+              <span id="expenseFormMsg" style="align-self:center;font-size:13px;color:var(--forest-lighter);"></span>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th><th>Date</th><th></th></tr></thead>
+              <tbody id="expenseBody"><tr><td colspan="6">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- CONTRIBUTORS ---------- -->
+      <section class="view" id="view-contributors">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">People</div>
+            <h1>Contributors</h1>
+          </div>
+        </div>
+
+        <div class="card card-pad" id="contributorFormCard" style="margin-bottom:18px;">
+          <form id="contributorForm" class="form-grid">
+            <div class="field">
+              <label for="ctName">Full name</label>
+              <input type="text" id="ctName" required>
+            </div>
+            <div class="field">
+              <label for="ctContact">Contact no. (optional)</label>
+              <input type="text" id="ctContact">
+            </div>
+            <div class="field">
+              <label for="ctNotes">Notes (optional)</label>
+              <input type="text" id="ctNotes">
+            </div>
+            <div class="form-actions" style="grid-column: 1 / -1;">
+              <button type="submit" class="btn btn-primary" style="width:auto;">Add contributor</button>
+              <button type="button" class="btn btn-outline" id="ctCancelEdit" style="display:none;">Cancel edit</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h3>All contributors</h3>
+            <input type="text" class="search-input" id="contributorSearch" placeholder="Search…">
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Name</th><th>Contact</th><th class="amount">Total given</th><th></th></tr></thead>
+              <tbody id="contributorBody"><tr><td colspan="4">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- CONTRIBUTION TYPES (admin) ---------- -->
+      <section class="view" id="view-settings">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">Configuration</div>
+            <h1>Contribution types</h1>
+          </div>
+        </div>
+        <div class="card card-pad" style="margin-bottom:18px;">
+          <form id="typeForm" class="form-grid">
+            <div class="field">
+              <label for="tyName">Type name</label>
+              <input type="text" id="tyName" placeholder="e.g. Weekly pledge, Building fund" required>
+            </div>
+            <div class="field">
+              <label for="tyAmount">Default amount</label>
+              <input type="number" id="tyAmount" min="0" step="0.01" placeholder="e.g. 10">
+            </div>
+            <div class="form-actions" style="grid-column: 1 / -1;">
+              <button type="submit" class="btn btn-primary" style="width:auto;">Add type</button>
+              <span id="typeFormMsg" style="align-self:center;font-size:13px;color:var(--forest-lighter);"></span>
+            </div>
+          </form>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Type</th><th>Default amount</th><th></th></tr></thead>
+              <tbody id="typeBody"><tr><td colspan="3">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- USERS (admin) ---------- -->
+      <section class="view" id="view-users">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">Access</div>
+            <h1>User accounts</h1>
+          </div>
+        </div>
+
+        <div class="card card-pad" style="margin-bottom:18px;">
+          <form id="userForm" class="form-grid">
+            <div class="field">
+              <label for="usName">Full name</label>
+              <input type="text" id="usName" required>
+            </div>
+            <div class="field">
+              <label for="usEmail">Email</label>
+              <input type="email" id="usEmail" required>
+            </div>
+            <div class="field">
+              <label for="usPassword">Temporary password</label>
+              <input type="text" id="usPassword" minlength="6" required>
+            </div>
+            <div class="field">
+              <label for="usRole">Role</label>
+              <select id="usRole">
+                <option value="viewer">Viewer</option>
+                <option value="treasurer">Treasurer</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            <div class="form-actions" style="grid-column: 1 / -1;">
+              <button type="submit" class="btn btn-primary" style="width:auto;">Create account</button>
+              <span id="userFormMsg" style="align-self:center;font-size:13px;color:var(--forest-lighter);"></span>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h3>All users</h3></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th></th></tr></thead>
+              <tbody id="userBody"><tr><td colspan="5">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============ BOTTOM NAV (mobile) ============ -->
+<nav class="bottom-nav" id="bottomNav">
+  <div class="nav-item" data-view="dashboard"><span class="ic">◆</span>Home</div>
+  <div class="nav-item" data-view="calendar"><span class="ic">▦</span>Calendar</div>
+  <div class="nav-item" data-view="contributions"><span class="ic">✎</span>Encode</div>
+  <div class="nav-item" data-view="contributors"><span class="ic">☰</span>People</div>
+  <div class="nav-item" data-view="expenses"><span class="ic">💸</span>Expenses</div>
+  <div class="nav-item" data-view="users" data-role="admin"><span class="ic">◈</span>Users</div>
+</nav>
+
+<!-- ============ CALENDAR DAY MODAL ============ -->
+<div class="modal-overlay" id="dayModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="dayModalTitle">—</h3>
+      <button class="modal-close" id="dayModalClose">✕</button>
+    </div>
+    <div class="modal-body" id="dayModalBody">
+      <p style="color:var(--ink-soft);font-size:13.5px;">Loading…</p>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

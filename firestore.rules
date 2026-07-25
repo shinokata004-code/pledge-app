@@ -1,0 +1,58 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function myProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function myRole() {
+      return isSignedIn() ? myProfile().role : null;
+    }
+
+    function isActive() {
+      return isSignedIn() && myProfile().active != false;
+    }
+
+    function isAdmin() {
+      return isActive() && myRole() == 'admin';
+    }
+
+    function isTreasurerOrAdmin() {
+      return isActive() && (myRole() == 'treasurer' || myRole() == 'admin');
+    }
+
+    // ---------------- users ----------------
+    // Anyone signed in can read the user list (needed for "encoded by" labels
+    // and the admin's user-management screen). Only an admin can create,
+    // update, or delete accounts. A user may always read their own doc,
+    // even before their role is otherwise verified.
+    match /users/{uid} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ---------------- contributors ----------------
+    match /contributors/{docId} {
+      allow read: if isActive();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ---------------- contribution types ----------------
+    match /contributionTypes/{docId} {
+      allow read: if isActive();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ---------------- contributions ----------------
+    match /contributions/{docId} {
+      allow read: if isActive();
+      allow create, update, delete: if isTreasurerOrAdmin();
+    }
+  }
+}

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>The Ledger — Sign in</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="login-shell">
+  <div class="login-card">
+    <div class="login-mark">
+      <div class="seal">L</div>
+      <div class="wordmark">The Ledger</div>
+    </div>
+    <h1>Sign in</h1>
+    <p class="sub">Track pledges, collections and contributors.</p>
+
+    <div id="loginError" class="login-error" style="display:none;"></div>
+
+    <form id="loginForm">
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn btn-primary" id="loginBtn">Sign in</button>
+    </form>
+
+    <p class="login-note">Accounts are created by an admin. Contact yours if you don't have one yet.</p>
+  </div>
+</div>
+
+<script type="module">
+  import { loginWithEmail, watchAuth } from "./js/auth.js";
+
+  const form = document.getElementById("loginForm");
+  const errBox = document.getElementById("loginError");
+  const btn = document.getElementById("loginBtn");
+
+  // Show a flash message if we were just redirected here (e.g. deactivated account).
+  const flash = sessionStorage.getItem("ledger_flash_error");
+  if (flash) {
+    errBox.textContent = flash;
+    errBox.style.display = "block";
+    sessionStorage.removeItem("ledger_flash_error");
+  }
+
+  // If already signed in, skip straight to the app.
+  watchAuth({
+    onReady: () => { window.location.href = "app.html"; }
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errBox.style.display = "none";
+    btn.textContent = "Signing in…";
+    btn.disabled = true;
+    try {
+      await loginWithEmail(
+        document.getElementById("email").value.trim(),
+        document.getElementById("password").value
+      );
+      window.location.href = "app.html";
+    } catch (err) {
+      errBox.textContent = friendlyError(err.code);
+      errBox.style.display = "block";
+      btn.textContent = "Sign in";
+      btn.disabled = false;
+    }
+  });
+
+  function friendlyError(code) {
+    switch (code) {
+      case "auth/invalid-credential":
+      case "auth/wrong-password":
+      case "auth/user-not-found":
+        return "That email or password doesn't match our records.";
+      case "auth/too-many-requests":
+        return "Too many attempts. Please wait a moment and try again.";
+      default:
+        return "Couldn't sign in. Please try again.";
+    }
+  }
+</script>
+</body>
+</html>
