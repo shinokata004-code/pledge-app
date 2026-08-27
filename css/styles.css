@@ -333,6 +333,7 @@ button { font-family: var(--font-body); cursor: pointer; }
 .stat-card:nth-child(2) { border-top-color: var(--accent-green); }
 .stat-card:nth-child(3) { border-top-color: var(--accent-yellow); }
 .stat-card:nth-child(4) { border-top-color: var(--accent-red); }
+.stat-card.expense-stat { border-top-color: var(--accent-red); }
 .stat-card .label { font-size: 12px; color: var(--ink-soft); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
 .stat-card .value { font-family: var(--font-mono); font-size: 26px; font-weight: 700; margin-top: 8px; color: var(--forest); }
 .stat-card .sub { font-size: 11.5px; color: var(--ink-soft); margin-top: 4px; }

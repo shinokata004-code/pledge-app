@@ -50,6 +50,10 @@ function renderStats(contributions, contributors, expenses) {
   document.getElementById("statMonthLabel").textContent = now.toLocaleString(undefined, { month: "long", year: "numeric" });
   document.getElementById("statWeek").textContent = fmt(weekTotal - expenseWeekTotal);
   document.getElementById("statContributors").textContent = contributors.filter((c) => c.active !== false).length;
+  document.getElementById("statExpenseTotal").textContent = fmt(expenseTotal);
+  document.getElementById("statExpenseMonth").textContent = fmt(expenseMonthTotal);
+  document.getElementById("statExpenseMonthLabel").textContent = now.toLocaleString(undefined, { month: "long", year: "numeric" });
+  document.getElementById("statExpenseWeek").textContent = fmt(expenseWeekTotal);
 }
 
 function renderCharts(contributions, expenses) {
