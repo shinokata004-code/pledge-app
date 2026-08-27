@@ -85,15 +85,14 @@ async function renderCalendar() {
 }
 
 function renderMonthMetrics(contributions, expenses) {
-  const contributionTotal = contributions.reduce((sum, item) => sum + (item.amount || 0), 0);
+  const collectionTotal = contributions.reduce((sum, item) => sum + (item.amount || 0), 0);
   const expenseTotal = expenses.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
-  const contributorCount = new Set(contributions.map((item) => item.contributorId || item.contributorName)).size;
-  document.getElementById("calContributionsTotal").textContent = fmt(contributionTotal);
+  const offeringsTotal = contributions
+    .filter((item) => String(item.typeName || "").trim().toLowerCase() === "offering")
+    .reduce((sum, item) => sum + (item.amount || 0), 0);
+  document.getElementById("calCollectionTotal").textContent = fmt(collectionTotal);
   document.getElementById("calExpensesTotal").textContent = fmt(expenseTotal);
-  document.getElementById("calNetTotal").textContent = fmt(contributionTotal - expenseTotal);
-  document.getElementById("calContributionCount").textContent = contributions.length;
-  document.getElementById("calExpenseCount").textContent = expenses.length;
-  document.getElementById("calContributorCount").textContent = contributorCount;
+  document.getElementById("calOfferingsTotal").textContent = fmt(offeringsTotal);
 }
 
 function ensureErrorBox() {
