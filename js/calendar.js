@@ -60,16 +60,16 @@ async function renderCalendar() {
   // and are still clickable — we just show a small inline notice.
   const errorBox = ensureErrorBox();
   errorBox.style.display = "none";
+  renderMonthMetrics([], []);
   try {
     const monthPrefix = localMonthStr(cursor);
     const [allContributions, allExpenses] = await Promise.all([listContributions(), listExpenses()]);
+    const monthContributions = allContributions.filter((c) => c.date && c.date.startsWith(monthPrefix));
+    const monthExpenses = allExpenses.filter((item) => item.date && item.date.startsWith(monthPrefix));
+    renderMonthMetrics(monthContributions, monthExpenses);
     const totalsByDay = {};
-    allContributions
-      .filter((c) => c.date && c.date.startsWith(monthPrefix))
-      .forEach((c) => { totalsByDay[c.date] = (totalsByDay[c.date] || 0) + (c.amount || 0); });
-    allExpenses
-      .filter((item) => item.date && item.date.startsWith(monthPrefix))
-      .forEach((item) => { totalsByDay[item.date] = (totalsByDay[item.date] || 0) - ((item.price || 0) * (item.quantity || 0)); });
+    monthContributions.forEach((c) => { totalsByDay[c.date] = (totalsByDay[c.date] || 0) + (c.amount || 0); });
+    monthExpenses.forEach((item) => { totalsByDay[item.date] = (totalsByDay[item.date] || 0) - ((item.price || 0) * (item.quantity || 0)); });
 
     grid.querySelectorAll(".cal-cell[data-date]").forEach((cell) => {
       const total = totalsByDay[cell.dataset.date];
@@ -82,6 +82,18 @@ async function renderCalendar() {
     errorBox.textContent = "Couldn't load collection totals (" + (err.code || err.message || "unknown error") + "). Dates are still clickable.";
     errorBox.style.display = "block";
   }
+}
+
+function renderMonthMetrics(contributions, expenses) {
+  const contributionTotal = contributions.reduce((sum, item) => sum + (item.amount || 0), 0);
+  const expenseTotal = expenses.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
+  const contributorCount = new Set(contributions.map((item) => item.contributorId || item.contributorName)).size;
+  document.getElementById("calContributionsTotal").textContent = fmt(contributionTotal);
+  document.getElementById("calExpensesTotal").textContent = fmt(expenseTotal);
+  document.getElementById("calNetTotal").textContent = fmt(contributionTotal - expenseTotal);
+  document.getElementById("calContributionCount").textContent = contributions.length;
+  document.getElementById("calExpenseCount").textContent = expenses.length;
+  document.getElementById("calContributorCount").textContent = contributorCount;
 }
 
 function ensureErrorBox() {
