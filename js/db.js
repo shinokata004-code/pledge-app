@@ -136,6 +136,21 @@ export async function addExpense({ name, price, quantity, date, note }) {
   }
 }
 
+export async function updateExpense(id, { name, price, quantity, date, note }) {
+  const payload = {
+    name, price: Number(price), quantity: Number(quantity), date, note: note || ""
+  };
+  try {
+    return await updateDoc(doc(db, "expenses", id), payload);
+  } catch (err) {
+    const stored = JSON.parse(localStorage.getItem("ledger_expenses") || "[]").map((item) =>
+      item.id === id ? { ...item, ...payload } : item
+    );
+    localStorage.setItem("ledger_expenses", JSON.stringify(stored));
+    return true;
+  }
+}
+
 export async function deleteExpense(id) {
   try {
     await deleteDoc(doc(db, "expenses", id));

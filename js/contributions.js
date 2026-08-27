@@ -15,6 +15,8 @@ let typesCache = [];
 let contributionsCache = [];
 let editingId = null;
 let searchTerm = "";
+let currentPage = 1;
+const PAGE_SIZE = 20;
 
 export async function initContributions() {
   document.getElementById("cfDate").value = localDateStr();
@@ -22,7 +24,14 @@ export async function initContributions() {
   document.getElementById("contribForm").addEventListener("submit", onSubmit);
   document.getElementById("contribSearch").addEventListener("input", (e) => {
     searchTerm = e.target.value.toLowerCase();
+    currentPage = 1;
     renderTable();
+  });
+  document.getElementById("contribPrev").addEventListener("click", () => {
+    if (currentPage > 1) { currentPage -= 1; renderTable(); }
+  });
+  document.getElementById("contribNext").addEventListener("click", () => {
+    if (currentPage < getPageCount()) { currentPage += 1; renderTable(); }
   });
 
   await Promise.all([loadDropdownData(), refreshContributions()]);
@@ -103,18 +112,27 @@ async function loadDropdownData() {
 
 export async function refreshContributions() {
   contributionsCache = await listContributions();
+  currentPage = Math.min(currentPage, getPageCount());
   renderTable();
+}
+
+function getPageCount() {
+  return Math.max(1, Math.ceil(getFilteredRows().length / PAGE_SIZE));
+}
+
+function getFilteredRows() {
+  if (!searchTerm) return contributionsCache;
+  return contributionsCache.filter((c) => (c.contributorName || "").toLowerCase().includes(searchTerm));
 }
 
 function renderTable() {
   const body = document.getElementById("contribBody");
   const allowManage = can("encodeContributions");
-  let rows = contributionsCache;
-  if (searchTerm) {
-    rows = rows.filter((c) => (c.contributorName || "").toLowerCase().includes(searchTerm));
-  }
-  if (!rows.length) {
+  const filteredRows = getFilteredRows();
+  const rows = filteredRows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  if (!filteredRows.length) {
     body.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="glyph">✎</div><p>No contributions found.</p></div></td></tr>`;
+    renderPagination(0);
     return;
   }
   body.innerHTML = rows.map((c) => `
@@ -134,8 +152,16 @@ function renderTable() {
     </tr>
   `).join("");
 
+  renderPagination(filteredRows.length);
   body.querySelectorAll("[data-edit]").forEach((btn) => btn.addEventListener("click", () => startEdit(btn.getAttribute("data-edit"))));
   body.querySelectorAll("[data-del]").forEach((btn) => btn.addEventListener("click", () => onDelete(btn.getAttribute("data-del"))));
+}
+
+function renderPagination(total) {
+  const count = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  document.getElementById("contribPageInfo").textContent = total ? `Page ${currentPage} of ${count}` : "No results";
+  document.getElementById("contribPrev").disabled = currentPage <= 1;
+  document.getElementById("contribNext").disabled = currentPage >= count;
 }
 
 function startEdit(id) {

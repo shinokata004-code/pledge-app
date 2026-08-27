@@ -198,6 +198,7 @@
               <tbody id="contribBody"><tr><td colspan="6">Loading…</td></tr></tbody>
             </table>
           </div>
+          <div class="pagination" id="contribPagination"><button class="btn btn-outline btn-sm" id="contribPrev">Previous</button><span id="contribPageInfo">Page 1 of 1</span><button class="btn btn-outline btn-sm" id="contribNext">Next</button></div>
         </div>
       </section>
 
@@ -234,18 +235,24 @@
             </div>
             <div class="form-actions" style="grid-column: 1 / -1;">
               <button type="submit" class="btn btn-primary" style="width:auto;">Record expense</button>
+              <button type="button" class="btn btn-outline" id="expCancelEdit" style="display:none;">Cancel edit</button>
               <span id="expenseFormMsg" style="align-self:center;font-size:13px;color:var(--forest-lighter);"></span>
             </div>
           </form>
         </div>
 
         <div class="card">
+          <div class="card-head">
+            <h3>All expenses</h3>
+            <input type="text" class="search-input" id="expenseSearch" placeholder="Search expenses…">
+          </div>
           <div class="table-wrap">
             <table>
               <thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th><th>Date</th><th></th></tr></thead>
               <tbody id="expenseBody"><tr><td colspan="6">Loading…</td></tr></tbody>
             </table>
           </div>
+          <div class="pagination" id="expensePagination"><button class="btn btn-outline btn-sm" id="expensePrev">Previous</button><span id="expensePageInfo">Page 1 of 1</span><button class="btn btn-outline btn-sm" id="expenseNext">Next</button></div>
         </div>
       </section>
 
@@ -290,6 +297,7 @@
               <tbody id="contributorBody"><tr><td colspan="4">Loading…</td></tr></tbody>
             </table>
           </div>
+          <div class="pagination" id="contributorPagination"><button class="btn btn-outline btn-sm" id="contributorPrev">Previous</button><span id="contributorPageInfo">Page 1 of 1</span><button class="btn btn-outline btn-sm" id="contributorNext">Next</button></div>
         </div>
       </section>
 

@@ -9,13 +9,22 @@ const fmt = (n) => APP_CONFIG.currencySymbol + Number(n || 0).toLocaleString(und
 let contributorsCache = [];
 let editingId = null;
 let searchTerm = "";
+let currentPage = 1;
+const PAGE_SIZE = 20;
 
 export async function initContributors() {
   document.getElementById("contributorForm").addEventListener("submit", onSubmit);
   document.getElementById("ctCancelEdit").addEventListener("click", resetForm);
   document.getElementById("contributorSearch").addEventListener("input", (e) => {
     searchTerm = e.target.value.toLowerCase();
+    currentPage = 1;
     renderTable();
+  });
+  document.getElementById("contributorPrev").addEventListener("click", () => {
+    if (currentPage > 1) { currentPage -= 1; renderTable(); }
+  });
+  document.getElementById("contributorNext").addEventListener("click", () => {
+    if (currentPage < getPageCount()) { currentPage += 1; renderTable(); }
   });
   await refreshContributorsView();
 }
@@ -26,17 +35,28 @@ async function refreshContributorsView() {
     const total = contributions.filter((x) => x.contributorId === c.id).reduce((s, x) => s + (x.amount || 0), 0);
     return { ...c, total };
   });
+  currentPage = Math.min(currentPage, getPageCount());
   renderTable();
+}
+
+function getFilteredRows() {
+  if (!searchTerm) return contributorsCache;
+  return contributorsCache.filter((c) => c.name.toLowerCase().includes(searchTerm));
+}
+
+function getPageCount() {
+  return Math.max(1, Math.ceil(getFilteredRows().length / PAGE_SIZE));
 }
 
 function renderTable() {
   const body = document.getElementById("contributorBody");
   const allowManage = can("manageContributors");
-  let rows = contributorsCache;
-  if (searchTerm) rows = rows.filter((c) => c.name.toLowerCase().includes(searchTerm));
+  const filteredRows = getFilteredRows();
+  const rows = filteredRows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-  if (!rows.length) {
+  if (!filteredRows.length) {
     body.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div class="glyph">☰</div><p>No contributors yet.</p></div></td></tr>`;
+    renderPagination(0);
     return;
   }
   body.innerHTML = rows.map((c) => `
@@ -54,8 +74,16 @@ function renderTable() {
     </tr>
   `).join("");
 
+  renderPagination(filteredRows.length);
   body.querySelectorAll("[data-edit]").forEach((btn) => btn.addEventListener("click", () => startEdit(btn.getAttribute("data-edit"))));
   body.querySelectorAll("[data-del]").forEach((btn) => btn.addEventListener("click", () => onDelete(btn.getAttribute("data-del"))));
+}
+
+function renderPagination(total) {
+  const count = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  document.getElementById("contributorPageInfo").textContent = total ? `Page ${currentPage} of ${count}` : "No results";
+  document.getElementById("contributorPrev").disabled = currentPage <= 1;
+  document.getElementById("contributorNext").disabled = currentPage >= count;
 }
 
 function startEdit(id) {

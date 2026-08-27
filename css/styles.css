@@ -439,6 +439,12 @@ td.amount, th.amount { text-align: right; font-family: var(--font-mono); }
 }
 .form-actions { display: flex; gap: 10px; margin-top: 4px; }
 .search-input { max-width: 260px; }
+.pagination {
+  display: flex; align-items: center; justify-content: flex-end; gap: 12px;
+  padding: 12px 20px; border-top: 1px solid var(--line-soft);
+  color: var(--ink-soft); font-size: 12px;
+}
+.pagination button:disabled { opacity: .45; cursor: not-allowed; }
 
 /* ============================================================
    CALENDAR
