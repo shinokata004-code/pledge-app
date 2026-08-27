@@ -4,7 +4,7 @@ import { localMonthStr, escapeHtml } from "./utils.js";
 
 const fmt = (n) => APP_CONFIG.currencySymbol + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-let monthlyChart, typeChart;
+let monthlyChart, typeChart, expenseChart;
 let latestDashboardData = { contributions: [], expenses: [] };
 
 export async function initDashboard() {
@@ -66,13 +66,16 @@ function renderCharts(contributions, expenses) {
 
   const monthlyCtx = document.getElementById("chartMonthly");
   const typeCtx = document.getElementById("chartTypes");
+  const expenseCtx = document.getElementById("chartExpenses");
 
   if (monthlyChart) monthlyChart.destroy();
   if (typeChart) typeChart.destroy();
+  if (expenseChart) expenseChart.destroy();
 
   if (typeof window.Chart === "undefined") {
     renderSimpleMonthlyChart(monthlyCtx, months, monthTotals);
     renderSimpleTypeChart(typeCtx, contributions, expenses);
+    renderSimpleExpenseChart(expenseCtx, expenses);
     return;
   }
 
@@ -98,15 +101,21 @@ function renderCharts(contributions, expenses) {
     }
   });
 
-  // By type
+  // Contributions by type, with all expenses grouped into one slice.
   const byType = {};
   contributions.forEach((c) => {
     const key = c.typeName || "Other";
     byType[key] = (byType[key] || 0) + (c.amount || 0);
   });
+  const expenseTotal = expenses.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0);
   const typeLabels = Object.keys(byType);
   const typeValues = Object.values(byType);
+  if (expenseTotal) {
+    typeLabels.push("Expenses");
+    typeValues.push(expenseTotal);
+  }
   const palette = ["#1a73e8", "#fbbc04", "#34a853", "#ea4335", "#5b6b7a", "#4285f4", "#1c5744"];
+  const typeColors = typeLabels.map((label, index) => label === "Expenses" ? "#ea4335" : palette[index % palette.length]);
 
   typeChart = new window.Chart(typeCtx, {
     type: "doughnut",
@@ -114,7 +123,28 @@ function renderCharts(contributions, expenses) {
       labels: typeLabels.length ? typeLabels : ["No data yet"],
       datasets: [{
         data: typeValues.length ? typeValues : [1],
-        backgroundColor: typeLabels.length ? palette : ["#e6e0cc"],
+        backgroundColor: typeLabels.length ? typeColors : ["#e6e0cc"],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: "bottom", labels: { boxWidth: 10, font: { size: 11 } } } }
+    }
+  });
+
+  const expenseByItem = getExpenseTotals(expenses);
+  const expenseLabels = Object.keys(expenseByItem);
+  const expenseValues = Object.values(expenseByItem);
+  const expensePalette = ["#ea4335", "#fbbc04", "#5b6b7a", "#1a73e8", "#34a853", "#c25b32", "#1c5744"];
+
+  expenseChart = new window.Chart(expenseCtx, {
+    type: "doughnut",
+    data: {
+      labels: expenseLabels.length ? expenseLabels : ["No data yet"],
+      datasets: [{
+        data: expenseValues.length ? expenseValues : [1],
+        backgroundColor: expenseLabels.length ? expenseLabels.map((_, index) => expensePalette[index % expensePalette.length]) : ["#e6e0cc"],
         borderWidth: 0
       }]
     },
@@ -152,15 +182,54 @@ function renderSimpleTypeChart(container, contributions, expenses) {
     const key = c.typeName || "Other";
     byType[key] = (byType[key] || 0) + (c.amount || 0);
   });
-  const expenseByType = {};
-  expenses.forEach((item) => {
-    const key = item.name || "Expense";
-    expenseByType[key] = (expenseByType[key] || 0) + (item.price || 0) * (item.quantity || 0);
-  });
-  const labels = [...new Set([...Object.keys(byType), ...Object.keys(expenseByType)])];
-  const values = labels.map((label) => (byType[label] || 0) + (expenseByType[label] || 0));
+  const expenseTotal = expenses.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0);
+  const labels = Object.keys(byType);
+  const values = Object.values(byType);
+  if (expenseTotal) {
+    labels.push("Expenses");
+    values.push(expenseTotal);
+  }
   const total = values.reduce((sum, value) => sum + value, 0) || 1;
   const palette = ["#1a73e8", "#fbbc04", "#34a853", "#ea4335", "#5b6b7a", "#4285f4", "#1c5744"];
+  let start = 0;
+  const gradientParts = labels.length
+    ? labels.map((label, index) => {
+        const angle = (values[index] / total) * 360;
+        const color = label === "Expenses" ? "#ea4335" : palette[index % palette.length];
+        const part = `${color} ${start}deg ${start + angle}deg`;
+        start += angle;
+        return part;
+      })
+    : ["#e6e0cc 0deg 360deg"];
+
+  container.innerHTML = `
+    <div class="simple-pie-wrap">
+      <div class="simple-pie" style="background: conic-gradient(${gradientParts.join(", ")});"></div>
+      <div class="simple-legend">
+        ${labels.length ? labels.map((label, index) => `
+          <div class="simple-legend-item"><span class="simple-legend-swatch" style="background:${label === "Expenses" ? "#ea4335" : palette[index % palette.length]}"></span>${escapeHtml(label)}</div>
+        `).join("") : '<div class="simple-legend-item"><span class="simple-legend-swatch" style="background:#e6e0cc"></span>No data yet</div>'}
+      </div>
+    </div>
+  `;
+}
+
+function getExpenseTotals(expenses) {
+  const totals = {};
+  expenses.forEach((item) => {
+    const key = item.name || "Expense";
+    totals[key] = (totals[key] || 0) + (item.price || 0) * (item.quantity || 0);
+  });
+  return totals;
+}
+
+function renderSimpleExpenseChart(container, expenses) {
+  if (!container) return;
+  const totals = getExpenseTotals(expenses);
+  const labels = Object.keys(totals);
+  const values = Object.values(totals);
+  const total = values.reduce((sum, value) => sum + value, 0) || 1;
+  const palette = ["#ea4335", "#fbbc04", "#5b6b7a", "#1a73e8", "#34a853", "#c25b32", "#1c5744"];
   let start = 0;
   const gradientParts = labels.length
     ? labels.map((label, index) => {
