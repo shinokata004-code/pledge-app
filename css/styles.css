@@ -130,6 +130,13 @@ button { font-family: var(--font-body); cursor: pointer; }
 .field input:focus, .field select:focus, .field textarea:focus {
   border-color: var(--forest-lighter);
 }
+.password-field { display: flex; align-items: stretch; }
+.password-field input { min-width: 0; flex: 1; border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+.password-toggle {
+  border: 1px solid var(--line); border-left: 0; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--paper); color: var(--ink-soft); padding: 0 12px; font-size: 12px; cursor: pointer;
+}
+.password-toggle:hover { color: var(--forest); border-color: var(--forest-lighter); }
 .search-picker {
   position: relative;
 }

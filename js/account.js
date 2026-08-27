@@ -5,6 +5,15 @@ export function initAccount() {
   const form = document.getElementById("accountForm");
   document.getElementById("accountName").value = session.name || "";
   document.getElementById("accountEmail").value = session.email || "";
+  document.querySelectorAll(".password-toggle").forEach((button) => {
+    button.addEventListener("click", () => {
+      const input = document.getElementById(button.getAttribute("data-password-target"));
+      const isVisible = input.type === "text";
+      input.type = isVisible ? "password" : "text";
+      button.textContent = isVisible ? "Show" : "Hide";
+      button.setAttribute("aria-label", `${isVisible ? "Show" : "Hide"} password`);
+    });
+  });
   form.addEventListener("submit", onSubmit);
 }
 
