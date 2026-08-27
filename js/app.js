@@ -6,8 +6,9 @@ import { initContributors } from "./contributors.js";
 import { initSettings } from "./settings.js";
 import { initUsers } from "./users.js";
 import { initExpenses } from "./expenses.js";
+import { initAccount } from "./account.js";
 
-const views = ["dashboard", "calendar", "contributions", "contributors", "expenses", "settings", "users"];
+const views = ["dashboard", "calendar", "contributions", "contributors", "expenses", "settings", "users", "account"];
 let initialized = false;
 
 function loadThemePreference() {
@@ -51,6 +52,7 @@ watchAuth({
       initContributions();
       initContributors();
       initExpenses();
+      initAccount();
       if (can("manageTypes")) {
         initSettings();
       }

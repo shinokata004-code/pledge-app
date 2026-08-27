@@ -32,6 +32,7 @@
       <li class="nav-item" data-view="expenses"><span class="ic">💸</span> Expenses</li>
       <li class="nav-item" data-view="settings" data-role="admin"><span class="ic">⚙</span> Types</li>
       <li class="nav-item" data-view="users" data-role="admin"><span class="ic">◈</span> Users</li>
+      <li class="nav-item" data-view="account"><span class="ic">●</span> My account</li>
     </ul>
     <div class="sidebar-user">
       <div class="who" id="sbName">—</div>
@@ -384,6 +385,45 @@
         </div>
       </section>
 
+      <!-- ---------- MY ACCOUNT ---------- -->
+      <section class="view" id="view-account">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">Personal settings</div>
+            <h1>My account</h1>
+          </div>
+        </div>
+
+        <div class="card card-pad account-card">
+          <form id="accountForm" class="form-grid">
+            <div class="field">
+              <label for="accountName">Full name</label>
+              <input type="text" id="accountName" minlength="2" maxlength="100" required>
+            </div>
+            <div class="field">
+              <label for="accountEmail">Email</label>
+              <input type="email" id="accountEmail" autocomplete="email" required>
+            </div>
+            <div class="field" style="grid-column:1 / -1;">
+              <label for="currentPassword">Current password</label>
+              <input type="password" id="currentPassword" autocomplete="current-password" placeholder="Required when changing email or password">
+            </div>
+            <div class="field">
+              <label for="newPassword">New password</label>
+              <input type="password" id="newPassword" minlength="6" autocomplete="new-password" placeholder="Leave blank to keep current password">
+            </div>
+            <div class="field">
+              <label for="confirmPassword">Confirm new password</label>
+              <input type="password" id="confirmPassword" minlength="6" autocomplete="new-password">
+            </div>
+            <div class="form-actions" style="grid-column:1 / -1;">
+              <button type="submit" class="btn btn-primary" style="width:auto;">Save changes</button>
+              <span id="accountFormMsg" style="align-self:center;font-size:13px;"></span>
+            </div>
+          </form>
+        </div>
+      </section>
+
     </div>
   </div>
 </div>
@@ -396,6 +436,7 @@
   <div class="nav-item" data-view="contributors"><span class="ic">☰</span>People</div>
   <div class="nav-item" data-view="expenses"><span class="ic">💸</span>Expenses</div>
   <div class="nav-item" data-view="users" data-role="admin"><span class="ic">◈</span>Users</div>
+  <div class="nav-item" data-view="account"><span class="ic">●</span>Account</div>
 </nav>
 
 <!-- ============ CALENDAR DAY MODAL ============ -->

@@ -207,6 +207,10 @@ export async function updateUser(uid, data) {
   return updateDoc(doc(db, "users", uid), data);
 }
 
+export async function updateUserProfile(uid, { name, email }) {
+  return updateDoc(doc(db, "users", uid), { name, email });
+}
+
 export async function getUser(uid) {
   const snap = await getDoc(doc(db, "users", uid));
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;

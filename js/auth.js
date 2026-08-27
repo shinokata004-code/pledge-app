@@ -8,7 +8,10 @@ import {
   signOut,
   onAuthStateChanged,
   createUserWithEmailAndPassword,
-  updatePassword
+  updatePassword,
+  updateEmail,
+  reauthenticateWithCredential,
+  EmailAuthProvider
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   getFirestore,
@@ -68,6 +71,20 @@ export async function loadUserProfile(uid) {
   const snap = await getDoc(doc(db, "users", uid));
   if (!snap.exists()) return null;
   return snap.data();
+}
+
+export async function updateFirebaseAccount({ email, currentPassword, newPassword }) {
+  const user = auth.currentUser;
+  if (!user) throw new Error("auth/no-current-user");
+
+  const emailChanged = email && email !== (user.email || "");
+  if (emailChanged || newPassword) {
+    if (!currentPassword) throw new Error("auth/current-password-required");
+    const credential = EmailAuthProvider.credential(user.email, currentPassword);
+    await reauthenticateWithCredential(user, credential);
+  }
+  if (emailChanged) await updateEmail(user, email);
+  if (newPassword) await updatePassword(user, newPassword);
 }
 
 // Watches auth state. onReady(profile) fires once we have a signed-in user
