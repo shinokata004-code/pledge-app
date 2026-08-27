@@ -78,6 +78,8 @@ function applyRoleVisibility(role) {
   if (encodeCard) encodeCard.style.display = can("encodeContributions") ? "" : "none";
   const contributorFormCard = document.getElementById("contributorFormCard");
   if (contributorFormCard) contributorFormCard.style.display = can("manageContributors") ? "" : "none";
+  const expenseFormCard = document.getElementById("expenseFormCard");
+  if (expenseFormCard) expenseFormCard.style.display = can("manageExpenses") ? "" : "none";
 }
 
 function wireNav() {

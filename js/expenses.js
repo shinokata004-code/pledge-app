@@ -105,6 +105,11 @@ async function onDelete(id) {
 async function onSubmit(e) {
   e.preventDefault();
   const msg = document.getElementById("expenseFormMsg");
+  if (!can("manageExpenses")) {
+    msg.style.color = "var(--brick)";
+    msg.textContent = "You do not have permission to manage expenses.";
+    return;
+  }
   const name = document.getElementById("expName").value.trim();
   const price = document.getElementById("expPrice").value;
   const quantity = document.getElementById("expQuantity").value;

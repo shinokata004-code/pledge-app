@@ -54,5 +54,11 @@ service cloud.firestore {
       allow read: if isActive();
       allow create, update, delete: if isTreasurerOrAdmin();
     }
+
+    // ---------------- expenses ----------------
+    match /expenses/{docId} {
+      allow read: if isActive();
+      allow create, update, delete: if isTreasurerOrAdmin();
+    }
   }
 }
