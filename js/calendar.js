@@ -90,9 +90,35 @@ function renderMonthMetrics(contributions, expenses) {
   const offeringsTotal = contributions
     .filter((item) => String(item.typeName || "").trim().toLowerCase() === "offering")
     .reduce((sum, item) => sum + (item.amount || 0), 0);
+  const typeTotals = {};
+
+  contributions.forEach((item) => {
+    const label = String(item.typeName || "").trim() || "Unspecified";
+    typeTotals[label] = (typeTotals[label] || 0) + (item.amount || 0);
+  });
+
   document.getElementById("calCollectionTotal").textContent = fmt(collectionTotal);
   document.getElementById("calExpensesTotal").textContent = fmt(expenseTotal);
   document.getElementById("calOfferingsTotal").textContent = fmt(offeringsTotal);
+
+  const breakdown = document.getElementById("calTypeBreakdown");
+  const entries = Object.entries(typeTotals).sort((a, b) => b[1] - a[1]);
+
+  if (!entries.length) {
+    breakdown.innerHTML = `<div class="empty-state"><div class="glyph">▦</div><p>No contribution types recorded in this month.</p></div>`;
+    return;
+  }
+
+  const maxValue = Math.max(...entries.map(([, total]) => total), 1);
+  breakdown.innerHTML = entries.map(([name, total]) => `
+    <div class="cal-type-row">
+      <div class="cal-type-meta">
+        <span class="cal-type-name">${escapeHtml(name)}</span>
+        <span class="cal-type-bar"><span style="width:${Math.max(10, (total / maxValue) * 100)}%"></span></span>
+      </div>
+      <span class="cal-type-total">${fmt(total)}</span>
+    </div>
+  `).join("");
 }
 
 function ensureErrorBox() {

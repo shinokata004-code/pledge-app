@@ -148,7 +148,17 @@
           <div class="stat-card expense-stat"><div class="label">Total expenses</div><div class="value" id="calExpensesTotal">—</div><div class="sub">Selected month</div></div>
           <div class="stat-card"><div class="label">Total offerings</div><div class="value" id="calOfferingsTotal">—</div><div class="sub">Selected month</div></div>
         </div>
-        <div class="card card-pad">
+        <div class="card" style="margin-top:16px;">
+          <div class="card-head">
+            <h3>Totals by contribution type</h3>
+          </div>
+          <div class="card-pad">
+            <div class="cal-type-breakdown" id="calTypeBreakdown">
+              <div class="empty-state"><div class="glyph">▦</div><p>No contribution types recorded in this month.</p></div>
+            </div>
+          </div>
+        </div>
+        <div class="card card-pad" style="margin-top:16px;">
           <div class="calendar-head">
             <button class="btn btn-outline btn-sm" id="calPrev">‹ Prev</button>
             <div class="month-label" id="calLabel">—</div>
